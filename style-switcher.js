@@ -494,17 +494,13 @@ loop();
      * ============================================================ */
     function mount(container) {
         container.innerHTML = `
-            <div style="font-size:12px;color:#ff9;margin-bottom:12px;">
-                ⚠️ 代码直接在主页面运行，只运行你信任的代码
-            </div>
-
-            <div style="margin-bottom:8px;font-size:13px;opacity:.8;">快速示例：</div>
+            <div style="margin-bottom:8px;font-size:13px;opacity:.8;">背景主题：</div>
             <div id="sample-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
 
-            <input type="file" id="bgFile" accept=".js,.txt"
-                style="margin-bottom:8px;color:#eee;font-size:12px;">
+            <!-- <input type="file" id="bgFile" accept=".js,.txt" 
+                style="margin-bottom:8px;color:#eee;font-size:12px;"> -->
 
-            <textarea id="bgText" placeholder="在此粘贴 JS 代码...
+            <textarea id="bgText" style="display: none;" placeholder="在此粘贴 JS 代码...
 可用变量：canvas, ctx, W, H, requestAnimationFrame, window, document"
                 style="width:100%;height:200px;box-sizing:border-box;
                 background:#000;color:#0f0;border:1px solid #444;border-radius:6px;
@@ -533,15 +529,16 @@ loop();
             sampleList.appendChild(b);
         });
 
-        container.querySelector('#bgFile').onchange = function (e) {
-            const f = e.target.files[0];
-            if (!f) return;
-            const r = new FileReader();
-            r.onload = function (ev) {
-                container.querySelector('#bgText').value = ev.target.result;
-            };
-            r.readAsText(f);
-        };
+        // 暂不支持自定义
+        // container.querySelector('#bgFile').onchange = function (e) {
+        //     const f = e.target.files[0];
+        //     if (!f) return;
+        //     const r = new FileReader();
+        //     r.onload = function (ev) {
+        //         container.querySelector('#bgText').value = ev.target.result;
+        //     };
+        //     r.readAsText(f);
+        // };
 
         container.querySelector('#applyBtn').onclick = function () {
             const code = container.querySelector('#bgText').value;
