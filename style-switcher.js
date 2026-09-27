@@ -518,14 +518,39 @@ loop();
         Object.keys(SAMPLES).forEach(function (name) {
             const b = document.createElement('button');
             b.textContent = name;
+
+            // 初始样式
             Object.assign(b.style, {
                 padding: '5px 10px', border: 'none', borderRadius: '6px',
                 background: 'rgba(102,126,234,.35)', color: '#cfe0ff',
-                cursor: 'pointer', fontSize: '12px'
+                cursor: 'pointer', fontSize: '12px',
+                transition: 'transform .1s, box-shadow .1s, background .1s',
+                transform: 'translateY(0)',
+                boxShadow: '0 2px 0 rgba(0,0,0,.25)'
             });
+
+            // 点击 b → 凹陷
+            b.addEventListener('click', () => {
+                Object.assign(b.style, {
+                    transform: 'translateY(2px)',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,.4)',
+                    background: 'rgba(102,126,234,.5)'
+                });
+            });
+            
+            // 点击复原按钮 → 恢复
+            applyBtn.addEventListener('click', () => {
+                Object.assign(b.style, {
+                    transform: 'translateY(0)',
+                    boxShadow: '0 2px 0 rgba(0,0,0,.25)',
+                    background: 'rgba(102,126,234,.35)'
+                });
+            });
+
             b.onclick = function () {
                 container.querySelector('#bgText').value = SAMPLES[name].trim();
             };
+            
             sampleList.appendChild(b);
         });
 
