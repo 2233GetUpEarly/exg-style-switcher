@@ -66,8 +66,8 @@
             requestAnimationFrame: function (cb) {
                 rafId = requestAnimationFrame(function (t) {
                     if (canvas) {
-                        W = canvas.width = window.innerWidth;
-                        H = canvas.height = window.innerHeight;
+                        W = window.innerWidth;
+                        H = window.innerHeight;
                     }
                     cb(t);
                 });
