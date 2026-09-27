@@ -173,44 +173,14 @@ let t = 0;
 function loop() {
     t += 0.005;
     const g = ctx.createLinearGradient(0, 0, W, H);
-    g.addColorStop(0, 'hsl(' + ((t*60)%360) + ', 45%, 12%)');
+    g.addColorStop(0, 'hsl(' + ((t*60)%360) + ', 45%, 20%)');
     g.addColorStop(0.5, 'hsl(' + ((t*60+120)%360) + ', 50%, 10%)');
-    g.addColorStop(1, 'hsl(' + ((t*60+240)%360) + ', 55%, 14%)');
+    g.addColorStop(1, 'hsl(' + ((t*60+240)%360) + ', 55%, 20%)');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
     requestAnimationFrame(loop);
 }
 loop();
-`,
-        '黑客帝国代码雨': `
-const canvas = document.createElement('canvas');
-canvas.id = 'myCanvas';
-Object.assign(canvas.style, {
-    position: 'fixed',
-    top: '0',
-    left: '0',
-    zIndex: '-1',
-    pointerEvents: 'none'
-});
-document.body.appendChild(canvas);
-
-const width = canvas.width = window.innerWidth;
-const height = canvas.height = window.innerHeight;
-const ctx2 = canvas.getContext("2d");
-const arr = Array(Math.ceil(width / 10)).fill(0);
-const str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-
-function rain() {
-    ctx2.fillStyle = "rgba(0,0,0,0.05)";
-    ctx2.fillRect(0, 0, width, height);
-    ctx2.fillStyle = "#0f0";
-    arr.forEach(function (value, index) {
-        ctx2.fillText(str[Math.floor(Math.random() * str.length)], index * 10, value + 10);
-        arr[index] = value >= height || value > 8888 * Math.random() ? 0 : value + 10;
-    });
-    requestAnimationFrame(rain);
-}
-rain();
 `,
         '代码雨':
 `
@@ -252,7 +222,271 @@ registerCleanup(function () {
     if (myRaf) cancelAnimationFrame(myRaf);
     myCanvas.remove();
 });
-`
+`,
+        '深海气泡':
+        `
+        const bubbles = [];
+
+function makeBubble(init) {
+    return {
+        x: Math.random() * W,
+        y: init ? Math.random() * H : H + 30 + Math.random() * 80,
+        r: Math.random() * 7 + 1.5,
+        sp: Math.random() * 1.1 + 0.35,
+        ph: Math.random() * Math.PI * 2,
+        sw: Math.random() * 0.03 + 0.012,
+        amp: Math.random() * 10 + 4,
+        a: Math.random() * 0.35 + 0.15
+    };
+}
+for (let i = 0; i < 55; i++) bubbles.push(makeBubble(true));
+
+function loop() {
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#07293f');
+    bg.addColorStop(1, '#010b16');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    for (let i = 0; i < bubbles.length; i++) {
+        const b = bubbles[i];
+        b.y -= b.sp;
+        b.ph += b.sw;
+        const x = b.x + Math.sin(b.ph) * b.amp;
+
+        // 柔光
+        const g = ctx.createRadialGradient(x, b.y, 0, x, b.y, b.r * 2.8);
+        g.addColorStop(0, 'rgba(120,220,255,' + (b.a * 0.5) + ')');
+        g.addColorStop(1, 'rgba(120,220,255,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, b.y, b.r * 2.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 气泡轮廓
+        ctx.beginPath();
+        ctx.arc(x, b.y, b.r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(170,235,255,' + b.a + ')';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 高光
+        ctx.beginPath();
+        ctx.arc(x - b.r * 0.32, b.y - b.r * 0.32, b.r * 0.26, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(230,250,255,' + Math.min(1, b.a * 1.6) + ')';
+        ctx.fill();
+
+        if (b.y < -30) bubbles[i] = makeBubble(false);
+    }
+
+    requestAnimationFrame(loop);
+}
+loop();
+        `,
+        '星座连线':
+        `
+        const pts = [];
+const COUNT = 90;
+for (let i = 0; i < COUNT; i++) {
+    pts.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.55,
+        vy: (Math.random() - 0.5) * 0.55
+    });
+}
+const MAXD = 140;
+
+function loop() {
+    ctx.fillStyle = '#060912';
+    ctx.fillRect(0, 0, W, H);
+
+    for (const p of pts) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 0 || p.y > H) p.vy *= -1;
+    }
+
+    for (let i = 0; i < COUNT; i++) {
+        const a1 = pts[i];
+        for (let j = i + 1; j < COUNT; j++) {
+            const b1 = pts[j];
+            const dx = a1.x - b1.x;
+            const dy = a1.y - b1.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 < MAXD * MAXD) {
+                const al = (1 - Math.sqrt(d2) / MAXD) * 0.45;
+                ctx.strokeStyle = 'rgba(120,190,255,' + al + ')';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(a1.x, a1.y);
+                ctx.lineTo(b1.x, b1.y);
+                ctx.stroke();
+            }
+        }
+    }
+
+    for (const p of pts) {
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 7);
+        g.addColorStop(0, 'rgba(215,240,255,0.95)');
+        g.addColorStop(1, 'rgba(120,190,255,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    requestAnimationFrame(loop);
+}
+loop();
+        `,
+        '赛博霓虹网格':
+        `
+        let t = 0;
+
+function loop() {
+    const horizon = H * 0.62;
+
+    // 夜空
+    const sky = ctx.createLinearGradient(0, 0, 0, horizon);
+    sky.addColorStop(0, '#07001a');
+    sky.addColorStop(0.6, '#1a0140');
+    sky.addColorStop(1, '#3d0668');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, horizon);
+
+    // 地面
+    ctx.fillStyle = '#05000e';
+    ctx.fillRect(0, horizon, W, H - horizon);
+
+    // 落日
+    const sunR = Math.min(W, H) * 0.16;
+    const sunY = horizon - sunR * 0.3;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(W / 2, sunY, sunR, 0, Math.PI * 2);
+    ctx.clip();
+    const sg = ctx.createLinearGradient(0, sunY - sunR, 0, sunY + sunR);
+    sg.addColorStop(0, '#ff3ea5');
+    sg.addColorStop(0.55, '#ff7a3d');
+    sg.addColorStop(1, '#ffd166');
+    ctx.fillStyle = sg;
+    ctx.fillRect(W / 2 - sunR, sunY - sunR, sunR * 2, sunR * 2);
+
+    // 横条纹切分
+    ctx.fillStyle = 'rgba(26,1,64,0.9)';
+    for (let i = 0; i < 11; i++) {
+        const yy = sunY - sunR * 0.05 + i * (sunR * 0.15);
+        ctx.fillRect(W / 2 - sunR, yy, sunR * 2, sunR * 0.045 + i * 0.7);
+    }
+    ctx.restore();
+
+    // 光晕
+    const glow = ctx.createRadialGradient(W / 2, sunY, sunR * 0.6, W / 2, sunY, sunR * 2.6);
+    glow.addColorStop(0, 'rgba(255,90,160,0.32)');
+    glow.addColorStop(1, 'rgba(255,90,160,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, horizon);
+
+    // 横向网格
+    t += 0.012;
+    const rows = 16;
+    const scroll = t % 1;
+    ctx.lineWidth = 1;
+    for (let i = 0; i < rows; i++) {
+        const k = (i + scroll) / rows;
+        const y = horizon + Math.pow(k, 2.6) * (H - horizon) * 1.5;
+        if (y > H) continue;
+        ctx.strokeStyle = 'rgba(0,255,220,' + (0.08 + k * 0.5) + ')';
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+    }
+
+    // 纵向网格（消失点透视）
+    for (let i = -14; i <= 14; i++) {
+        ctx.strokeStyle = 'rgba(255,60,200,0.26)';
+        ctx.beginPath();
+        ctx.moveTo(W / 2, horizon);
+        ctx.lineTo(W / 2 + i * (W / 8), H + 60);
+        ctx.stroke();
+    }
+
+    // 地平线光带
+    const hg = ctx.createLinearGradient(0, horizon - 8, 0, horizon + 8);
+    hg.addColorStop(0, 'rgba(0,255,220,0)');
+    hg.addColorStop(0.5, 'rgba(0,255,220,0.9)');
+    hg.addColorStop(1, 'rgba(0,255,220,0)');
+    ctx.fillStyle = hg;
+    ctx.fillRect(0, horizon - 8, W, 16);
+
+    requestAnimationFrame(loop);
+}
+loop();
+        `,
+        '星际穿梭':
+        `
+const stars = [];
+for (let i = 0; i < 340; i++) {
+    stars.push({
+        x: (Math.random() - 0.5) * 2,
+        y: (Math.random() - 0.5) * 2,
+        z: Math.random() * 0.95 + 0.05
+    });
+}
+
+ctx.fillStyle = '#02030a';
+ctx.fillRect(0, 0, W, H);
+
+// 拖尾长度：值越大，流星尾巴越长
+const TRAIL = 2.6;
+
+function loop() {
+    ctx.fillStyle = 'rgba(2,3,10,0.20)';
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = W / 2;
+    const cy = H / 2;
+    const scale = Math.min(W, H) * 0.75;
+
+    ctx.lineCap = 'round';
+
+    for (const s of stars) {
+        const pz = s.z;
+        s.z -= 0.008;
+
+        if (s.z < 0.07) {
+            s.x = (Math.random() - 0.5) * 2;
+            s.y = (Math.random() - 0.5) * 2;
+            s.z = 1;
+            continue;
+        }
+
+        const x = cx + s.x / s.z * scale;
+        const y = cy + s.y / s.z * scale;
+
+        // ★ 拖尾拉长：用更早的 z 计算尾巴起点
+        let tz = pz + (pz - s.z) * TRAIL;
+        if (tz > 1) tz = 1;
+        const px = cx + s.x / tz * scale;
+        const py = cy + s.y / tz * scale;
+
+        const a = Math.min(1, (1 - s.z) * 1.6);
+        ctx.strokeStyle = 'rgba(170,210,255,' + a + ')';
+        ctx.lineWidth = Math.max(0.6, a * 2.2);
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+
+    requestAnimationFrame(loop);
+}
+loop();
+        `
     };
 
     /* ============================================================
